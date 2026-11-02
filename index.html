@@ -1,0 +1,1124 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>心动计划·像素实验室</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* 像素实验室：深色街机单主题。墨蓝底/金色主色/青色辅助，CRT 扫描线。 */
+:root{
+  color-scheme:dark;
+  --bg:#0b0d1c; --bg2:#10132a; --panel:#171b36; --panel2:#1f2447;
+  --line:#39406e; --line2:#565f9e;
+  --fg:#e9ecff; --dim:#9aa3d6; --faint:#6a72a8;
+  --gold:#ffd23f; --gold-dk:#b98f14;
+  --green:#5fe08a; --red:#ff5d73; --cyan:#5ad0ff; --purple:#b48cff;
+  --shadow:rgba(0,0,0,.5);
+  --f-disp:'Press Start 2P',monospace;
+  --f-body:'Noto Sans SC',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono','Noto Sans SC',monospace;
+}
+*{box-sizing:border-box}
+html{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font-family:var(--f-body);font-size:15px;line-height:1.75;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:22px 44px;
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:40;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse at center,transparent 62%,rgba(0,0,0,.3) 100%);
+}
+#wrap{max-width:800px;margin:0 auto}
+[hidden]{display:none!important}
+h1,h2,h3{line-height:1.4;text-wrap:balance;margin:0 0 10px}
+.disp{font-family:var(--f-disp)}
+.panel{background:var(--panel);border:3px solid var(--line);box-shadow:5px 5px 0 var(--shadow);padding:16px 18px;margin:0 0 16px}
+.panel.flat{box-shadow:none}
+.panel2{background:var(--panel2)}
+.btn{
+  font-family:var(--f-disp);font-size:11px;letter-spacing:1px;
+  background:var(--gold);color:#15130a;border:3px solid #15130a;
+  box-shadow:0 4px 0 var(--gold-dk),4px 4px 0 var(--shadow);
+  padding:11px 18px;cursor:pointer;text-transform:uppercase;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--gold-dk)}
+.btn.ghost{background:var(--panel2);color:var(--fg);border-color:var(--line2);box-shadow:0 4px 0 #22264d,4px 4px 0 var(--shadow)}
+.btn.ghost:active{box-shadow:0 1px 0 #22264d}
+.btn.small{font-size:9px;padding:8px 12px}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.tag{display:inline-block;font-size:11px;font-weight:700;border:2px solid var(--line2);color:var(--dim);background:var(--bg2);padding:1px 8px;margin:0 6px 6px 0}
+.tag.gold{color:var(--gold);border-color:var(--gold-dk)}
+.tag.cyan{color:var(--cyan);border-color:#2a6a86}
+.dim{color:var(--dim)}.faint{color:var(--faint)}.small{font-size:13px}
+hr.px{border:none;border-top:3px solid var(--line);margin:14px 0}
+/* 状态条 */
+#status{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;background:var(--panel);border:3px solid var(--line);box-shadow:5px 5px 0 var(--shadow);padding:9px 14px;margin:0 0 18px;font-size:13px}
+#status .grow{flex:1 1 130px;min-width:110px}
+.lv{font-family:var(--f-disp);font-size:10px;color:var(--gold);white-space:nowrap}
+.xpbar{height:12px;background:var(--bg2);border:2px solid var(--line2);position:relative;overflow:hidden}
+.xpbar i{position:absolute;inset:0;background:repeating-linear-gradient(90deg,var(--gold) 0 8px,var(--gold-dk) 8px 12px);transform-origin:left}
+#status button{font-family:var(--f-disp);font-size:9px;background:var(--panel2);color:var(--dim);border:2px solid var(--line2);padding:6px 9px;cursor:pointer}
+#status button:hover{color:var(--fg)}
+/* 标题屏 */
+#scr-title{text-align:center;padding-top:30px}
+#scr-title .sub{font-family:var(--f-disp);font-size:10px;color:var(--cyan);letter-spacing:2px;margin:12px 0 4px}
+#scr-title h1{font-size:52px;font-weight:900;letter-spacing:6px;color:var(--gold);text-shadow:0 6px 0 var(--gold-dk),6px 6px 0 rgba(0,0,0,.5);margin:4px 0}
+#scr-title .logo2{font-family:var(--f-disp);font-size:13px;letter-spacing:1px}
+.pixelbox{display:inline-block;padding:16px;border:3px solid var(--line);background:var(--panel);box-shadow:5px 5px 0 var(--shadow);image-rendering:pixelated}
+.bob{animation:bob 1.2s steps(2) infinite}
+@keyframes bob{50%{transform:translateY(4px)}}
+/* 关卡路径 */
+.lvl{display:flex;flex-direction:column;gap:0}
+.node{display:flex;gap:14px;align-items:stretch}
+.node .rail{display:flex;flex-direction:column;align-items:center;width:34px;flex:none}
+.node .dot{width:34px;height:34px;border:3px solid var(--line2);background:var(--panel2);display:flex;align-items:center;justify-content:center;font-family:var(--f-disp);font-size:10px;color:var(--dim);flex:none}
+.node .wire{width:4px;flex:1;background:var(--line);min-height:14px}
+.node:last-child .wire{display:none}
+.node .card{flex:1;min-width:0;background:var(--panel);border:3px solid var(--line);box-shadow:4px 4px 0 var(--shadow);padding:12px 14px;margin:0 0 14px;cursor:pointer}
+.node .card:hover{border-color:var(--line2)}
+.node.locked .card{opacity:.42;cursor:not-allowed}
+.node.done .dot{background:#123a24;border-color:var(--green);color:var(--green)}
+.node.done .card{border-color:#2c7c4a}
+.node .nm{font-weight:900;font-size:16px}
+/* 实验台 */
+.stagebar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.st{flex:1 1 100px;min-width:96px;text-align:center;font-size:12px;border:2px solid var(--line);background:var(--bg2);color:var(--faint);padding:6px 4px}
+.st.now{border-color:var(--gold);color:var(--gold);background:var(--panel2)}
+.st.ok{border-color:#2c7c4a;color:var(--green)}
+.goal{font-size:15px}
+.codebox{overflow-x:auto;background:#0d1024;border:3px solid var(--line);padding:10px 12px;box-shadow:4px 4px 0 var(--shadow);margin:10px 0}
+.codebox pre{margin:0;font-family:var(--f-mono);font-size:13px;line-height:1.85}
+.cline{white-space:pre;display:flex}
+.cline .no{width:30px;flex:none;text-align:right;margin-right:12px;color:#3d4577;user-select:none}
+.cline.hl{color:var(--gold)}
+.cline.cur{background:rgba(255,210,63,.14);outline:1px solid rgba(255,210,63,.4)}
+.cline .tx{min-width:0}
+/* 代码填空 */
+.binput{border:none;border-bottom:2px dashed var(--gold);background:rgba(255,210,63,.09);color:var(--fg);font-family:var(--f-mono);font-size:13px;padding:0 4px;text-align:center;outline:none}
+.binput:focus{background:rgba(255,210,63,.18)}
+.binput.bwrong{border-bottom-color:var(--red);background:rgba(255,93,115,.1);color:var(--red)}
+.bsolved{color:var(--gold);border-bottom:2px solid var(--green);padding:0 4px}
+.bbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 0}
+/* 手机：输入框 ≥16px，避免 iOS 聚焦时自动放大页面 */
+@media (pointer:coarse){.inrow input,.binput{font-size:16px}}
+/* 控制台 */
+.term{background:#070a18;border:3px solid var(--line);box-shadow:4px 4px 0 var(--shadow);padding:12px 14px;font-family:var(--f-mono);font-size:13px;line-height:1.8;overflow-x:auto;white-space:pre-wrap;word-break:break-all;min-height:64px}
+.term .c{color:var(--cyan)}.term .g{color:var(--green)}.term .r{color:var(--red)}
+.term .d{color:var(--faint)}.term .y{color:var(--gold)}
+.inrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.inrow label{font-size:12px;color:var(--dim);align-self:center}
+.inrow input{flex:1 1 180px;min-width:140px;font-family:var(--f-mono);font-size:13px;background:#0d1024;color:var(--fg);border:2px solid var(--line2);padding:8px 10px}
+.preset{font-size:12px;font-weight:700;background:var(--bg2);color:var(--cyan);border:2px solid #2a6a86;padding:5px 10px;cursor:pointer}
+.preset:hover{background:#12283a}
+.switch{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.switch button{font-family:var(--f-body);font-weight:700;font-size:13px;background:var(--bg2);color:var(--dim);border:2px solid var(--line2);padding:5px 14px;cursor:pointer}
+.switch button.on{background:#3a2f0a;color:var(--gold);border-color:var(--gold-dk)}
+/* 变量表 / 追踪 */
+.vt{font-family:var(--f-mono);font-size:13px;border:2px solid var(--line);background:#0d1024;margin-top:10px}
+.vt .vr{display:flex;border-bottom:1px solid #1c2244}
+.vt .vr:last-child{border-bottom:none}
+.vt .k{width:110px;flex:none;padding:4px 10px;color:var(--faint);border-right:1px solid #1c2244}
+.vt .val{padding:4px 10px;color:var(--gold);word-break:break-all}
+.tnote{font-size:13px;color:var(--cyan);margin-top:8px;min-height:1.4em}
+.tctl{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.guess{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.guess button{font-family:var(--f-mono);font-size:14px;background:var(--panel2);color:var(--fg);border:2px solid var(--line2);padding:10px 16px;cursor:pointer}
+.guess button:hover{border-color:var(--cyan)}
+.guess button.good{border-color:var(--green);color:var(--green);background:#12281a}
+.guess button.badd{border-color:var(--red);color:var(--red);background:#2a1016;cursor:default}
+.fb{margin-top:10px;font-size:14px;border-top:2px dashed var(--line);padding-top:8px}
+.center{text-align:center}
+.actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;margin-top:14px}
+details.orig{border:2px solid var(--line);background:var(--bg2);padding:8px 12px;margin:10px 0}
+details.orig summary{cursor:pointer;font-weight:700;color:var(--cyan)}
+.note{font-size:13px;color:var(--faint);border-left:4px solid var(--line2);padding:4px 12px;margin:10px 0}
+.blink{animation:blk 1s steps(2) infinite}
+@keyframes blk{50%{opacity:.3}}
+canvas.grid{image-rendering:pixelated;border:2px solid var(--line);background:#0d1024;display:block;margin-top:10px;max-width:100%}
+.qboxes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-family:var(--f-mono);font-size:13px}
+.qb{border:2px solid var(--line2);background:var(--bg2);padding:4px 10px}
+.qb.top{border-color:var(--gold);color:var(--gold)}
+.srow{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap;font-family:var(--f-mono);font-size:12px}
+.srow span{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--line2);background:var(--bg2)}
+.srow span.b{border-color:var(--red);color:var(--red)}
+.srow span.win{border-color:var(--gold);background:#3a2f0a;color:var(--gold)}
+@media (prefers-reduced-motion: reduce){.bob,.blink{animation:none}}
+</style>
+<div id="wrap">
+  <div id="status" hidden>
+    <span class="lv" id="st-lv"></span>
+    <span class="grow"><span class="xpbar"><i id="st-xp"></i></span></span>
+    <span class="dim small" id="st-misc"></span>
+    <button id="bt-snd">SND:ON</button>
+    <button id="bt-map">关卡表</button>
+  </div>
+  <main id="scr-title"></main>
+  <main id="scr-map" hidden></main>
+  <main id="scr-lab" hidden></main>
+</div>
+<script>
+"use strict";
+/* ============ 通用 ============ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const SKEY="xtp_pixel_lab_v2";
+let SAVE={xp:0,done:{},snd:true};
+function loadSave(){try{const r=localStorage.getItem(SKEY);if(r)SAVE=Object.assign(SAVE,JSON.parse(r))}catch(e){}}
+function saveSave(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
+const RANK=[[0,"LV1 实验员"],[200,"LV2 助理研究员"],[400,"LV3 研究员"],[600,"LV4 资深研究员"],[800,"LV5 首席科学家"]];
+function rank(xp){let i=0;for(let k=0;k<RANK.length;k++)if(xp>=RANK[k][0])i=k;return i}
+let AC=null;
+function tone(f,dur,type,vol,delay){
+  if(!SAVE.snd)return;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime+(delay||0),o=AC.createOscillator(),g=AC.createGain();
+    o.type=type||"square";o.frequency.value=f;
+    g.gain.setValueAtTime(vol||.07,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur);
+  }catch(e){}
+}
+const sfx={
+  click(){tone(660,.05)},ok(){tone(880,.08);tone(1320,.1,"square",.06,.09)},
+  err(){tone(150,.15,"sawtooth",.09)},pass(){tone(784,.06);tone(1046,.08,"square",.06,.07)},
+  win(){[523,659,784,1046].forEach((f,i)=>tone(f,.11,"square",.07,i*.1))}
+};
+function parseNums(v){
+  const parts=v.split(/[\s,，]+/).filter(x=>x.length);
+  const out=[];
+  for(const p of parts){const n=Number(p);if(!Number.isInteger(n))return null;out.push(n)}
+  return out;
+}
+const i32=n=>{n=n|0;return n};
+/* ============ 数据：九个实验关卡 ============ */
+const LEVELS=[
+{ id:"L0", name:"热身 · 累加器", ch:"入门", diff:1,
+  intro:"先用几个小实验熟悉实验台：改输入、点运行、单步看变量、亲手补代码。之后每一关都是这个节奏。",
+  stages:[
+  { t:"实验 1 · 它会算什么？", kind:"demo", need:{any:true},
+    d:"下面是一段真的会这样执行的 C++。在输入框里随便改几个整数，点【运行】，看输出怎么跟着变；再点【单步追踪】，看 sum 一步一步怎么长。",
+    demo:{
+      code:["#include <iostream>","using namespace std;","int main() {","    int sum = 0;","    int x;","    while (cin >> x) {   // 逐个读入，直到输入结束","        sum += x;","    }","    cout << sum << endl;","}"],
+      ui:"free", ph:"例：5, -3, 2", def:"5, -3, 2",
+      run(v){const a=parseNums(v);let s=0;for(const x of a)s+=x;return String(s)},
+      trace(v){const a=parseNums(v);const fr=[];let s=0;
+        fr.push({l:3,v:[["sum","0"]],note:"sum 从 0 开始"});
+        a.forEach((x,i)=>{s+=x;fr.push({l:6,v:[["x",String(x)],["sum",String(s)]],note:"读入 "+x+"，累加"})});
+        fr.push({l:8,v:[["sum",String(s)]],note:"输出 sum",out:String(s)});
+        return fr}
+    }},
+  { t:"实验 2 · 先猜再跑", kind:"guess", need:{guess:true},
+    d:"同样的程序，输入固定为 5, -3, 2。先在心里算一遍，再选答案——选完程序会真的跑给你看。",
+    guess:{show:"输入: 5, -3, 2", q:"cout 会输出什么？", opts:["4","10","-10"], ci:0,
+      why:"5 + (-3) + 2 = 4。负数在 C++ 里照常参与运算，循环对它一视同仁。"}},
+  { t:"实验 3 · 跑翻它：int 装不下", kind:"demo", need:{any:true},
+    d:"输入固定为 2000000000 和 2000000000。这段代码编译没问题、逻辑也没问题——点【▶ 运行】，看 int 给出什么答案。",
+    demo:{
+      code:["#include <iostream>","using namespace std;","int main() {","    int sum = 0;         // int 只有 32 位","    int x;","    while (cin >> x) {","        sum += x;","    }","    cout << sum << endl;","}"],
+      ui:"fixed", fixed:"2000000000, 2000000000",
+      run(v){return "-294967296   ← 两个 20 亿相加，怎么会是负数？"},
+      note(){return "int 的最大值约 21.4 亿。40 亿把它绕回了一圈——就像里程表从 999999 跳回 000000。这叫溢出。"}
+    }},
+  { t:"实验 4 · 你来改：一行救回来", kind:"demo", need:{blanks:true},
+    d:"同样的输入，同样的程序——但代码里有一个金色空。把 sum 换成装得下 40 亿的类型：直接在空里打字，点【✓ 检查】，再【▶ 运行】。",
+    demo:{
+      code:["#include <iostream>","using namespace std;","int main() {","    %0 sum = 0;      // ← 只改这里","    int x;","    while (cin >> x) {","        sum += x;","    }","    cout << sum << endl;","}"],
+      ui:"fixed", fixed:"2000000000, 2000000000",
+      blanks:[{ph:"类型名（两个单词）",accept:["long long","long long int"],ans:"long long",
+        hints:["出问题的不是算法，是 sum 的类型——32 位装不下 40 亿","C++ 的 64 位整数类型是两个单词，long 开头"]}],
+      run(v){return "4000000000   ← 对了"},
+      note(){return "同一个输入，换一个类型，结果从 -294967296 变回 4000000000。题 5、题 10、题 30 的累计值都要这样处理。"}
+    }},
+  { t:"小结", kind:"tests", need:{tests:true},
+    d:"实验台四件事你已经会了：改输入→运行、先猜再跑、单步看变量、亲手补代码。记住 int 溢出这个坑，后面题 5、题 10、题 30 都要用 long long。进入第一个正式题目：遥控小车。",
+    tests:{title:"热身完成", cases:[
+      {in:"5, -3, 2", exp:"4", got:"4", note:"实验 1"},
+      {in:"5, -3, 2（先猜）", exp:"4", got:"4", note:"实验 2"},
+      {in:"2000000000, 2000000000（int 版）", exp:"-294967296", got:"-294967296", note:"实验 3：溢出"},
+      {in:"2000000000, 2000000000（你来改后）", exp:"4000000000", got:"4000000000", note:"实验 4：long long"}]}}
+]}
+,
+{ id:"L1", name:"遥控小车", ch:"题 23 · 坐标模拟", diff:1,
+  intro:"小车听一串 G/L/R 指令行动。先玩沙盘，再用最笨的实现跑一遍，看它在哪翻车。",
+  stages:[
+  { t:"实验 1 · 沙盘：小车怎么走", kind:"demo", need:{any:true},
+    d:"规则：G 前进 1 格，L 左转 90°（原地），R 右转 90°（原地）。初始在原点、面朝北。改指令或点预设，单步看小车每一步的位置和朝向。",
+    demo:{
+      code:["// 三个指令","// G：直走 1 单位","// L：左转 90°（原地）","// R：右转 90°（原地）","// 初始：(0,0) 面朝北"],
+      ui:"free", ph:"只许 G / L / R", def:"GLGRG",
+      validate(v){if(!/^[GRL]*$/.test(v))return "指令只能是 G、L、R";if(!v.length)return "至少给一条指令";return null},
+      presets:[{l:"GG",v:"GG"},{l:"GLGRG",v:"GLGRG"},{l:"GLLG",v:"GLLG"},{l:"RRRR",v:"RRRR"}],
+      run(v){const s=simCar(v);const p=s[s.length-1];return "["+p.x+", "+p.y+"]"},
+      trace(v){const s=simCar(v);return s.map((p,i)=>{
+        const act=i===0?"起点 (0,0)，面朝北":(v[i-1]==="G"?"G：朝面朝方向走一步":(v[i-1]==="L"?"L：原地左转 90°":"R：原地右转 90°"));
+        return {car:p,cmd:(i===0?"起点":v[i-1]),note:act+" → 位置 ("+p.x+", "+p.y+")"};
+      })}
+    }},
+  { t:"实验 2 · 最简实现：只管往前走", kind:"demo", need:{preset:"GLLG"},
+    d:"第一版代码：以为小车永远朝北，G 就 y+1，L/R 直接忽略。点预设 GLLG 跑一遍——再对照上面沙盘里 GLLG 的真实结果。",
+    demo:{
+      code:["pair<int,int> Run(const string& cmds) {","    int x = 0, y = 0;","    for (char c : cmds) {","        if (c == 'G') y += 1;   // 以为永远朝北","        // L、R？没记朝向，只好忽略","    }","    return {x, y};","}"],
+      ui:"free", ph:"只许 G / L / R", def:"GLLG",
+      validate(v){if(!/^[GRL]*$/.test(v))return "指令只能是 G、L、R";return null},
+      presets:[{l:"GLLG",v:"GLLG"}],
+      run(v){let y=0;for(const c of v)if(c==="G")y++;return "["+0+", "+y+"]  ← 答案错了"},
+      note(){return "沙盘说 GLLG 终点是 [0, 0]，这版算出 [0, 2]——因为它根本不知道小车转过身。"}
+    }},
+  { t:"实验 3 · 你来改：把朝向记成向量", kind:"demo", need:{blanks:true},
+    d:"金色行是新增的：朝向 = 方向向量 (dx,dy)，G 沿向量走。左转的两行空着——按注释提示补全，检查后跑 GLLG 验证（沙盘里它的真实终点是 [0, 0]）。",
+    demo:{
+      codeFn(){return ["pair<int,int> Run(const string& cmds) {","    int x = 0, y = 0;","    int dx = 0, dy = 1;          // 朝向向量：初始面朝北","    for (char c : cmds) {","        if (c == 'G') { x += dx; y += dy; }","        else if (c == 'L') {     // 左转 90°","            int t = %0;          // 先把旧 dx 暂存起来","            dx = %1;             // 新的 dx","            dy = t;              // 新的 dy 恰好就是旧 dx","        } else {                 // 右转 90°（已经写好，对照着看）","            int t = dx; dx = dy; dy = -t;","        }","    }","    return {x, y};","}"]},
+      hl:[2,5],
+      ui:"free", ph:"只许 G / L / R", def:"GLLG",
+      validate(v){if(!/^[GRL]*$/.test(v))return "指令只能是 G、L、R";return null},
+      presets:[{l:"GLLG",v:"GLLG"},{l:"GLGRG",v:"GLGRG"}],
+      blanks:[
+        {ph:"变量名",accept:["dx"],ans:"dx",
+          hints:["直接写 dx = -dy 会先把 dx 冲掉，下一行 dy 就只能用到被污染的值","先用一个临时变量把旧 dx 存下来——存进谁？"]},
+        {ph:"表达式",accept:["-dy","(-dy)"],ans:"-dy",
+          hints:["左转：面朝北 (0,1) 应该变成面朝西 (-1,0)。新的 dx 是多少？","新 dx = 旧 dy 取负，写成 -dy"]}],
+      run(v){const p=simCar(v).pop();return "["+p.x+", "+p.y+"]"},
+      note(){return "L：(dx,dy)→(−dy,dx)，R：(dx,dy)→(dy,−dx)。先暂存再覆盖——旋转类题目的经典坑，8 个 if 分支就这样消失。"}},
+  },
+  { t:"先猜后跑", kind:"guess", need:{guess:true},
+    d:"改进版代码，输入 RRRR（原地连转四圈的四分之一……四次 90°）。",
+    guess:{show:"输入: RRRR", q:"终点是？", opts:["[0, 0]","[4, 0]","[0, -4]"], ci:0,
+      why:"转四次 90° 正好转回原朝向，一步没走，终点还是原点。转身不挪窝。"}},
+  { t:"原题验证", kind:"tests", need:{tests:true},
+    d:"这就是【软件认证】第 23 题。完整规则在下面，展开看；判题机用三组用例验收。",
+    tests:{title:"题 23 · 遥控小车",
+      orig:"平面直角坐标系（上北=+Y，右东=+X）。小车初始位于原点 (0,0)、面朝北。指令 'G'：直走 1 单位；'L'：左转 90°；'R'：右转 90°。cmds 仅由 G、L、R 组成，长度 ≤ 100。求最终坐标 [x, y]。",
+      sig:"pair<int,int> RunRemoteCtrlCar(const string& cmds)",
+      cases:[
+        {in:"\"GG\"", exp:"[0, 2]", got:"[0, 2]", note:"样例：直走两步"},
+        {in:"\"GLLG\"", exp:"[0, 0]", got:"[0, 0]", note:"北→西→南，走一步回原点"},
+        {in:"\"GLGRG\"", exp:"[-1, 2]", got:"[-1, 2]", note:"沙盘同款指令"}]}}
+]}
+];
+/* 小车模拟 */
+function simCar(cmds){let x=0,y=0,dx=0,dy=1;const st=[{x,y,dx,dy}];
+  for(const ch of cmds){if(ch==="G"){x+=dx;y+=dy}else if(ch==="L"){const t=dx;dx=-dy;dy=t}else{const t=dx;dx=dy;dy=-t}st.push({x,y,dx,dy})}return st}
+LEVELS.push(
+{ id:"L2", name:"挑选礼物", ch:"题 2 · 队列与栈", diff:1,
+  intro:"礼物堆成栈，员工排成队。先把样例一步一步看懂，再看两版实现的差别。",
+  stages:[
+  { t:"实验 1 · 一步一步看样例", kind:"demo", need:{any:true},
+    d:"规则：队首员工喜欢栈顶礼物就拿走（双双出列）；不喜欢就去队尾重排；直到所有人都对栈顶不满意为止。点预设跑一遍，单步看队列和栈怎么变。",
+    demo:{
+      code:["// 队首喜欢栈顶 → 拿走（队首出队，栈顶出栈）","// 不喜欢   → 去队尾重排","// 所有人都不喜欢栈顶 → 结束，剩下的人拿不到"],
+      ui:"presetsOnly",
+      presets:[{l:"样例：[1,2,2,1,2] / [2,1,1,2,1]",v:"1,2,2,1,2|2,1,1,2,1"},
+               {l:"[1,1] / [1,2]",v:"1,1|1,2"},
+               {l:"[1,2] / [2,1]",v:"1,2|2,1"}],
+      run(v){const [f,p]=v.split("|").map(s=>s.split(",").map(Number));const st=simGift(f,p);
+        return "真模拟答案："+st[st.length-1].gift.f.length+" 人拿不到礼物"},
+      trace(v){const [f0,p0]=v.split("|").map(s=>s.split(",").map(Number));return simGift(f0,p0)}
+    }},
+  { t:"实验 2 · 最简实现：排序后配对", kind:"demo", need:{preset:"[2,2,1] / [1,1,2]"},
+    d:"直觉版：把两边都排序，从头配对，没对上的就是拿不到的。输入预设 [2,2,1] / [1,1,2] 跑一遍，再和实验 1 的真模拟对照。",
+    demo:{
+      code:["int Solve(vector<int> fav, vector<int> pre) {","    sort(fav.begin(), fav.end());","    sort(pre.begin(), pre.end());","    int same = 0;","    for (int i = 0; i < (int)fav.size(); ++i)","        if (fav[i] == pre[i]) ++same;","    return (int)fav.size() - same;","}"],
+      ui:"presetsOnly",
+      presets:[{l:"[2,2,1] / [1,1,2]",v:"2,2,1|1,1,2"}],
+      run(v){const [f,p]=v.split("|").map(s=>s.split(",").map(Number));
+        const a=f.slice().sort((x,y)=>x-y),b=p.slice().sort((x,y)=>x-y);let same=0;
+        for(let i=0;i<a.length;i++)if(a[i]===b[i])same++;
+        return "排序配对版答案："+(a.length-same)+" 人  ← 真实答案是 2"},
+      note(){return "排序把队列和栈的顺序抹掉了，而顺序正是规则本身。真模拟里最后拿不到的是 2 人。"}
+    }},
+  { t:"实验 3 · 改进：两个计数器", kind:"demo", need:{preset:"样例"},
+    d:"金色行是改进版：队列顺序根本没用，系统状态只有两个数——还想要 1 的人数、还想要 2 的人数。栈顶 p 有人要就减一，没人要就是死锁。",
+    demo:{
+      codeFn(){return ["int Solve(const vector<int>& favorites, const vector<int>& presents) {","    int cnt1 = 0, cnt2 = 0;","    for (int f : favorites) (f == 1 ? cnt1 : cnt2)++;","    for (int p : presents) {","        if (p == 1) { if (cnt1 == 0) break; --cnt1; }","        else        { if (cnt2 == 0) break; --cnt2; }","    }","    return cnt1 + cnt2;","}"]},
+      hl:[4,5,6,7],
+      ui:"presetsOnly",
+      presets:[{l:"样例",v:"1,2,2,1,2|2,1,1,2,1"},{l:"[2,2,1] / [1,1,2]",v:"2,2,1|1,1,2"}],
+      run(v){const [f,p]=v.split("|").map(s=>s.split(",").map(Number));
+        let c1=0,c2=0;for(const x of f){if(x===1)c1++;else c2++}
+        for(const x of p){if(x===1){if(c1===0)break;c1--}else{if(c2===0)break;c2--}}
+        return "计数器版答案："+(c1+c2)+" 人"},
+      note(){return "presents 下标 0 是栈顶，正序遍历恰好就是出栈顺序。cnt 变 0 的那一刻 = 死锁。"}},
+  },
+  { t:"先猜后跑", kind:"guess", need:{guess:true},
+    d:"计数器版，输入 favorites = [1, 1]，presents = [1, 2]。",
+    guess:{show:"favorites=[1,1]  presents=[1,2]", q:"拿不到礼物的人有几个？", opts:["1","0","2"], ci:0,
+      why:"栈顶 1 被拿走（cnt1 减到 1），栈顶 2 时 cnt2 = 0——没人想要鼠标，死锁，剩下的 1 人拿不到。"}},
+  { t:"原题验证", kind:"tests", need:{tests:true},
+    d:"这就是【软件认证】第 2 题。完整规则展开看。",
+    tests:{title:"题 2 · 挑选礼物",
+      orig:"两种礼物：1=雨伞、2=无线鼠标。favorites 下标 0 是队首，presents 下标 0 是栈顶。队首喜欢栈顶就拿走离队，否则去队尾；持续到所有人都不喜欢栈顶为止，返回拿不到礼物的人数。长度 ≤ 100。",
+      sig:"int GetUnselectedNum(const vector<int>& favorites, const vector<int>& presents)",
+      cases:[
+        {in:"[1,2,2,1,2]  [2,1,1,2,1]", exp:"1", got:"1", note:"样例：中途死锁"},
+        {in:"[2,2,1]  [1,1,2]", exp:"2", got:"2", note:"排序配对版在这里翻车"},
+        {in:"[1,2]  [2,1]", exp:"0", got:"0", note:"全员拿到"}]}}
+]}
+,
+{ id:"L3", name:"单词统计", ch:"题 1 · 字符串扫描", diff:2,
+  intro:"行尾的 '-' 是胶水，把下一行粘上来。先看胶水怎么工作，再数单词。",
+  stages:[
+  { t:"实验 1 · 胶水怎么粘", kind:"demo", need:{preset:"样例1"},
+    d:"行与行之间的拼接规则：行尾有 '-' 就和下一行粘成一段（下一行开头空格跳过）；没有 '-' 就分段。点样例看它把 4 行粘成几段，或自己用 | 分隔多行输入。",
+    demo:{
+      code:["// 行尾有 '-'：和下一行粘成一段（下一行跳过开头空格）","// 行尾没有 '-'：在此分段","// 目标：先看清段落，再谈数单词"],
+      ui:"free", ph:"多行用 | 分隔", def:"engineers , worldwide, ,.courses part|y.. .vendors.|,hell-|o",
+      presets:[{l:"样例1",v:"engineers , worldwide, ,.courses part|y.. .vendors.|,hell-|o"},
+               {l:"样例2",v:"a -|aagg-|-|aa,b.|h-| ell-|o-| |world."}],
+      run(v){const segs=joinLines(v.split("|"));return segs.map((s,i)=>"段落"+(i+1)+": "+(s.txt===""?"(空)":s.txt)).join("\n")},
+      note(){return "段落 = 被续行符焊在一起的一叠纸带。样例1 的 ',hell-' 和 'o' 焊成了 ,hello。"}
+    }},
+  { t:"实验 2 · 最简实现：逐行数单词", kind:"demo", need:{preset:"样例1"},
+    d:"第一版：每行独立数单词再求和。点样例1 跑——答案为什么多了 1？",
+    demo:{
+      code:["int CountWords(const string& s) {   // 连续字母段 = 1 个单词","    int cnt = 0; bool in = false;","    for (char c : s)","        if (c >= 'a' && c <= 'z') { if (!in) { ++cnt; in = true; } }","        else in = false;","    return cnt;","}","int GetWordsCnt(const vector<string>& lines) {","    int total = 0;","    for (auto& line : lines) total += CountWords(line);","    return total;   // ← 忘了续行符","}"],
+      ui:"presetsOnly",
+      presets:[{l:"样例1",v:"engineers , worldwide, ,.courses part|y.. .vendors.|,hell-|o"}],
+      run(v){const ls=v.split("|");let t=0;for(const l of ls)t+=countWords(l);
+        return "逐行数："+t+" 个  ← 正确答案是 7"},
+      note(){return "hell 和 o 被当成了两个单词——先粘再数，不能逐行数。"}
+    }},
+  { t:"实验 3 · 改进：先粘后数", kind:"demo", need:{preset:"样例2"},
+    d:"金色行是新增的拼接状态机：joinNext 记录“要不要粘下一行”。跑样例1 和 样例2 验证，再自由输入玩一玩。",
+    demo:{
+      codeFn(){return ["int GetWordsCnt(const vector<string>& lines) {","    int cnt = 0; string cur;","    bool joinNext = false;","    for (auto& line : lines) {","        bool cont = !line.empty() && line.back() == '-';","        if (joinNext) {","            size_t p = line.find_first_not_of(' ');","            if (p != string::npos) cur += line.substr(p);","        } else cur += line;","        if (cont) { cur.pop_back(); joinNext = true; }","        else { cnt += CountWords(cur); cur.clear(); joinNext = false; }","    }","    return cnt;","}"]},
+      hl:[2,4,5,6,7,8,9,10],
+      ui:"free", ph:"多行用 | 分隔", def:"engineers , worldwide, ,.courses part|y.. .vendors.|,hell-|o",
+      presets:[{l:"样例1",v:"engineers , worldwide, ,.courses part|y.. .vendors.|,hell-|o"},
+               {l:"样例2",v:"a -|aagg-|-|aa,b.|h-| ell-|o-| |world."}],
+      run(v){const segs=joinLines(v.split("|"));let t=0;for(const s of segs)t+=countWords(s.txt);
+        return segs.map((s,i)=>"段落"+(i+1)+": "+s.txt).join("\n")+"\n"+"单词总数："+t+" 个"},
+      note(){return "只有“本行没有续行符”时才结算段落；单独成行的 '-' 也要能级联粘。"}},
+  },
+  { t:"先猜后跑", kind:"guess", need:{guess:true},
+    d:"改进版，输入 4 行：\"-\" / \"-\" / \"a-\" / \"b\"。",
+    guess:{show:"lines = [\"-\", \"-\", \"a-\", \"b\"]", q:"单词数是？", opts:["1","0","2"], ci:0,
+      why:"三个续行符级联：b 被一路焊到 a 上，整段只有 ab 一个单词。"}},
+  { t:"原题验证", kind:"tests", need:{tests:true},
+    d:"这就是【软件认证】第 1 题。完整规则展开看。",
+    tests:{title:"题 1 · 单词统计",
+      orig:"每行仅含 a-z、空格、逗号、句号和续行符 '-'；'-' 只在行尾且不在最后一行。含 '-' 的行：把下一行从首个非空字符起的余下部分拼接在 '-' 左侧字符后；不含 '-' 的行与下一行分隔。单词 = 全部由字母组成。1 ≤ 行数 ≤ 25，行长 ≤ 80。",
+      sig:"int GetWordsCnt(const vector<string>& lines)",
+      cases:[
+        {in:"样例1（4 行）", exp:"7", got:"7", note:"hell- + o = hello"},
+        {in:"样例2（9 行，连续续行）", exp:"5", got:"5", note:"\"-\" 单独成行也级联"},
+        {in:"[\"-\", \"-\", \"a-\", \"b\"]", exp:"1", got:"1", note:"边界：b 焊到 a 上"}]}}
+]}
+);
+/* 单词工具 */
+function countWords(s){let c=0,inW=false;for(const ch of s){if(ch>="a"&&ch<="z"){if(!inW){c++;inW=true}}else inW=false}return c}
+function joinLines(lines){
+  const segs=[];let cur="",joinNext=false;
+  for(const line of lines){
+    const cont=line.length>0&&line.endsWith("-");
+    if(joinNext){const p=Math.max(0,line.search(/[^ ]/));if(p>=0)cur+=line.slice(p)}
+    else cur+=line;
+    if(cont){cur=cur.slice(0,-1);joinNext=true}
+    else{segs.push({txt:cur});cur="";joinNext=false}
+  }
+  if(cur!==""||joinNext)segs.push({txt:cur});
+  return segs;
+}
+function simGift(f0,p0){const f=f0.slice(),p=p0.slice();const steps=[];let run=0,guard=0;
+  steps.push({gift:{f:f.slice(),p:p.slice()},note:"开局：队列 "+f.length+" 人，栈顶礼物是 "+p[0]});
+  while(f.length&&guard++<200){
+    if(f[0]===p[0]){const who=f.shift();p.shift();run=0;
+      steps.push({gift:{f:f.slice(),p:p.slice()},note:who+" 号员工喜欢栈顶，拿走离开 ✓"})}
+    else{const who=f.shift();f.push(who);run++;
+      steps.push({gift:{f:f.slice(),p:p.slice()},note:who+" 号不喜欢栈顶 "+p[0]+"，去队尾重排"});
+      if(run>=f.length)break}
+  }
+  steps.push({gift:{f:f.slice(),p:p.slice()},note:"结束：还剩 "+f.length+" 人拿不到礼物（栈顶 "+(p[0]!==undefined?p[0]:"空")+" 没人想要）"});
+  return steps;
+}
+LEVELS.push(
+{ id:"L4", name:"时长单位转换", ch:"题 4 · 解析与进制", diff:2,
+  intro:"把 489607 minute 写成“尽量大”的单位。先玩懂“元/角/分”，再向上转换试试。",
+  stages:[
+  { t:"实验 1 · 元/角/分：整除 + 取余", kind:"demo", need:{any:true},
+    d:"把 12345 分换成 元/角/分：整除留下、余数传下去。输入任意“分”数，单步看每一级怎么展开——这就是混合进制。",
+    demo:{
+      code:["int v = cents;","int yuan = v / 100;  v %= 100;   // 整除留下，余数传下去","int jiao = v / 10;   v %= 10;","// 剩下的 v 就是分"],
+      ui:"free", ph:"例：12345", def:"12345",
+      validate(v){const n=Number(v);if(!Number.isInteger(n)||n<0||n>9999999)return "请输入 0 ~ 9999999 的整数";return null},
+      run(v){const n=Number(v);return mixRadix(n).out},
+      trace(v){const n=Number(v);const m=mixRadix(n);return m.frames}
+    }},
+  { t:"实验 2 · 最简实现：向上逐级换算", kind:"demo", need:{any:true},
+    d:"第一版直接向上换：minute→hour→day→month。跑输入 489607 minute——对照题目样例的正确答案 10 month 30 day 7 minute。",
+    demo:{
+      code:["string UpConvert(long long minute) {","    long long hour  = minute / 60;","    long long day   = hour  / 24;","    long long month = day   / 31;","    long long y = month / 22, m = month % 22;","    long long d = day % 24, h = hour % 24, mi = minute % 60;","    return to_string(m) + \" month \" + to_string(d)","         + \" day \" + to_string(h) + \" hour \"","         + to_string(mi) + \" minute\";","}"],
+      ui:"presetsOnly",
+      presets:[{l:"489607 minute",v:"489607"}],
+      run(v){const mi=Number(v),hour=Math.floor(mi/60),day=Math.floor(hour/24),month=Math.floor(day/31);
+        const m=month%22,d=day%24,h=hour%24;
+        return m+" month "+d+" day "+h+" hour "+mi%60+" minute  ← 样例答案是 10 month 30 day 7 minute"},
+      note(){return "month 按 31 除、day 却按 24 取余——各级的“进制”没对齐，数字全错位了。向上逐级换算的余数很难理顺。"}
+    }},
+  { t:"实验 3 · 改进：折成秒再统一展开", kind:"demo", need:{preset:"21 month"},
+    d:"金色部分是改进：先折算成最小单位秒，再从 year 到 second 逐级“整除 + 取余”——和实验 1 的元/角/分一模一样，展开唯一且自动跳过 0。",
+    demo:{
+      codeFn(){return ["const long long M[] = {22*31*24*3600LL, 31*24*3600LL, 24*3600LL,","                  3600LL, 60LL, 1LL};   // year month day hour minute second","string Fix(const string& val, const string& unit) {","    long long total = val对应单位的秒数;        // ← 新增：统一折算成秒","    string r;","    for (int i = 0; i < 6; ++i) {","        long long v = total / M[i]; total %= M[i];   // ← 整除留下，余数传下去","        if (v > 0) r += to_string(v) + \" \" + NAME[i] + \" \";","    }","    return r;   // 0 的单位自然被跳过","}"]},
+      hl:[3,6,7],
+      ui:"free", ph:"格式：数值 单位", def:"489607 minute",
+      validate(v){const m=/^(\d+) (year|month|day|hour|minute|second)$/.exec(v.trim());if(!m)return "格式：数值 单位（如 489607 minute）";return null},
+      presets:[{l:"489607 minute",v:"489607 minute"},{l:"21 month",v:"21 month"},{l:"530323200 second",v:"530323200 second"}],
+      run(v){const m=/^(\d+) (year|month|day|hour|minute|second)$/.exec(v.trim());return unitFix(+m[1],m[2])},
+      note(){return "从 year 到 second 逐级除，能进位就进位，展开唯一——不会出现 9 month 61 day。"}},
+  },
+  { t:"先猜后跑", kind:"guess", need:{guess:true},
+    d:"改进版，输入 22 month（恰好 1 year）。",
+    guess:{show:"输入: \"22 month\"", q:"输出是？", opts:["\"1 year\"","\"22 month\"","\"1 year 0 month\""], ci:0,
+      why:"22 month 恰好折满 1 year，进位进满；0 的单位整个跳过。不需要任何特判。"}},
+  { t:"原题验证", kind:"tests", need:{tests:true},
+    d:"这就是【软件认证】第 4 题。换算链：1 year=22 month，1 month=31 day，1 day=24 hour，1 hour=60 minute，1 minute=60 second。",
+    tests:{title:"题 4 · 时长单位转换",
+      orig:"输入“数值 单位”，数值为大于 0 的整数，转换前后时长小于 10 year。向尽量大的单位转换，每个单位数值为整数，数值为 0 的单位跳过不输出，各单位间以单空格分隔。",
+      sig:"string UnitTransform(const string& inputStr)",
+      cases:[
+        {in:"\"489607 minute\"", exp:"\"10 month 30 day 7 minute\"", got:"\"10 month 30 day 7 minute\"", note:"样例1：0 hour 跳过"},
+        {in:"\"530323200 second\"", exp:"\"9 year\"", got:"\"9 year\"", note:"样例2：中间单位全为 0"},
+        {in:"\"22 month\"", exp:"\"1 year\"", got:"\"1 year\"", note:"边界：恰好进位"}]}}
+]}
+,
+{ id:"L5", name:"给定差值的组合", ch:"题 20 · 哈希", diff:2,
+  intro:"数组里有多少对数相减等于 diff？小数组暴力没问题——十万条呢？",
+  stages:[
+  { t:"实验 1 · 暴力数一数", kind:"demo", need:{any:true},
+    d:"最直白的想法：两两配对，差的绝对值等于 diff 就记一对。改改数组玩一玩，注意输出的“比较次数”。",
+    demo:{
+      code:["int GetDiffCnt(int diff, const vector<int>& a) {","    int cnt = 0;","    for (int i = 0; i < n; ++i)","        for (int j = i + 1; j < n; ++j)     // 两两配对","            if (abs(a[i] - a[j]) == diff) ++cnt;","    return cnt;","}"],
+      ui:"free", ph:"格式：diff 数组", def:"3 1,3,2,5,4",
+      validate(v){const m=/^(-?\d+) (.+)$/.exec(v.trim());if(!m)return "格式：diff 数组（如 3 1,3,2,5,4）";
+        if(!parseNums(m[2]))return "数组要是整数";return null},
+      run(v){const m=/^(-?\d+) (.+)$/.exec(v.trim());const d=+m[1],a=parseNums(m[2]);
+        let c=0;const pairs=[];let cmp=0;
+        for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){cmp++;if(Math.abs(a[i]-a[j])===Math.abs(d)){c++;pairs.push("("+a[i]+","+a[j]+")")}}
+        return "组合数："+c+(pairs.length?"  "+pairs.slice(0,8).join(" "):"")+"\n比较了 "+cmp+" 次"},
+      note(){return "n 个元素要比较 n(n-1)/2 次。这里 5 个元素才 10 次，很快；n=102400 呢？"}
+    }},
+  { t:"实验 2 · 放大到十万", kind:"demo", need:{tle:true}, tle:true,
+    d:"同一个双重循环，n = 102400。点【运行】——注意比较计数器。这题 n 可达 102400。",
+    demo:{
+      code:["// 同一个双重循环，n = 102400","for (int i = 0; i < n; ++i)","    for (int j = i + 1; j < n; ++j)   // 1.02×10⁵ ² / 2 ≈ 52 亿次","        if (abs(a[i] - a[j]) == diff) ++cnt;"],
+      ui:"presetsOnly",
+      presets:[{l:"n = 102400（随机数组, diff=7）",v:"big"}],
+      run(v){return "TLE"},   /* 由引擎特判播放动画 */
+      tle:{total:5249762560, unit:"次比较"}
+    }},
+  { t:"实验 3 · 改进：把“找搭档”变成“查字典”", kind:"demo", need:{opts:true},
+    d:"所有值放进哈希集合，每个 v 只问一句“v + diff 在不在”。下面有开关：先用【无特判版】跑 diff = 0，再切到【特判版】跑一次。",
+    demo:{
+      codeFn(o){return o.guard?
+        ["int GetDiffCnt(int diff, const vector<int>& numbers) {","    if (diff == 0) return 0;   // ← 特判：元素值唯一","    unordered_set<int> seen(numbers.begin(), numbers.end());","    int cnt = 0;","    for (int v : numbers)","        if (seen.find(v + diff) != seen.end()) ++cnt;","    return cnt;","}"]:
+        ["int GetDiffCnt(int diff, const vector<int>& numbers) {","    unordered_set<int> seen(numbers.begin(), numbers.end());","    int cnt = 0;","    for (int v : numbers)","        if (seen.find(v + diff) != seen.end()) ++cnt;","    return cnt;","}"]},
+      hl:o=>o.guard?[1]:[1,2,3,4],
+      ui:"free", ph:"格式：diff 数组", def:"3 1,3,2,5,4",
+      toggles:[{k:"guard",label:"特判版"}],
+      validate(v){const m=/^(-?\d+) (.+)$/.exec(v.trim());if(!m)return "格式：diff 数组";
+        const a=parseNums(m[2]);if(!a)return "数组要是整数";if(new Set(a).size!==a.length)return "题目保证元素值唯一，请别重复";return null},
+      presets:[{l:"3 [1,3,2,5,4]",v:"3 1,3,2,5,4"},{l:"0 [1,2,3]",v:"0 1,2,3"},{l:"n=102400, diff=7",v:"big"}],
+      run(v,o){if(v==="big"){const a=bigArr();const s=new Set(a);let c=0;
+          if(!(o&&o.guard)){for(const x of a)if(s.has(x+7))c++;c+=0}
+          else{if(7===0)c=0;else{c=0;for(const x of a)if(s.has(x+7))c++}}
+          return "n=102400：查了 102400 次字典（瞬时完成）\n组合数："+c+"（diff=7）"}
+        const m=/^(-?\d+) (.+)$/.exec(v.trim());const d=+m[1],a=parseNums(m[2]);
+        const s=new Set(a);let c=0;
+        if(!(o&&o.guard)){for(const x of a)if(s.has(x+d))c++}
+        else{if(d===0)return "0（特判：元素值唯一，差为 0 不可能）";for(const x of a)if(s.has(x+d))c++}
+        return "组合数："+c},
+      note(o){return (o&&o.guard)?"特判生效：diff=0 直接返回 0——元素值唯一，不可能有两个相等的元素。":"无特判时 diff=0 会数出 3：每个元素都“找到了自己”。"}}
+  },
+  { t:"原题验证", kind:"tests", need:{tests:true},
+    d:"这就是【软件认证】第 20 题。展开看完整规则。",
+    tests:{title:"题 20 · 给定差值的组合",
+      orig:"数组元素值唯一，找出两元素相减等于 diff 的所有不同无序组合的个数。diff ∈ [-50000, 50000]，2 ≤ n ≤ 102400，-20 ≤ numbers[i] ≤ 102400。",
+      sig:"int GetDiffCnt(int diff, const vector<int>& numbers)",
+      cases:[
+        {in:"3  [1,3,2,5,4]", exp:"2", got:"2", note:"4−1=3，5−2=3"},
+        {in:"-1  [1,2,3]", exp:"2", got:"2", note:"负 diff 同样适用"},
+        {in:"0  [1,2,3]", exp:"0", got:"0", note:"diff=0 特判"}]}}
+]}
+);
+/* 单位换算 / 大数组 */
+const UNITS=[["year",22*31*24*3600],["month",31*24*3600],["day",24*3600],["hour",3600],["minute",60],["second",1]];
+function unitFix(val,unit){
+  let total=0;for(const [n,m] of UNITS)if(n===unit)total=val*m;
+  let r=[],t=total;
+  for(const [n,m] of UNITS){const v=Math.floor(t/m);t%=m;if(v>0)r.push(v+" "+n)}
+  return "\""+r.join(" ")+"\"";
+}
+function mixRadix(n){
+  const yuan=Math.floor(n/100);let t=n%100;
+  const jiao=Math.floor(t/10);t%=10;
+  const frames=[
+    {l:1,v:[["v",String(n)]],note:n+" 分 = "+yuan+" 元 余 "+t+" 分"},
+    {l:2,v:[["yuan",String(yuan)],["v",String(t)]],note:"整除 100 留下 "+yuan+" 元，余 "+t+" 继续算"},
+    {l:3,v:[["jiao",String(jiao)],["v",String(t)]],note:"整除 10 留下 "+jiao+" 角，余 "+t+" 分"},
+    {l:4,v:[["分",String(t)]],note:"最后剩下 "+t+" 分"}];
+  return {out:yuan+" 元 "+jiao+" 角 "+t+" 分",frames};
+}
+let _big=null;
+function bigArr(){if(_big)return _big;const a=[];let s=12345;
+  for(let i=0;i<102400;i++){s=(s*1103515245+12345)&0x7fffffff;a.push(-20+(s%102421))}
+  _big=[...new Set(a)].slice(0,102400);return _big}
+LEVELS.push(
+{ id:"L6", name:"磁盘空间统计", ch:"题 5 · 前缀和", diff:2,
+  intro:"数“平均占用 ≥ 阈值”的连续区间个数。先玩懂前缀和，再看看暴力为什么会超时。",
+  stages:[
+  { t:"实验 1 · 前缀和：任意区间一剪", kind:"demo", need:{any:true},
+    d:"先算好累计值 P，任意区间和 = 两个前缀相减。选左右端点（0 起），点【剪一刀】看区间和与平均值。",
+    demo:{
+      code:["P[0] = 0;","for (int i = 0; i < n; ++i)","    P[i + 1] = P[i] + records[i];   // 累计值","// 区间 [l, r] 的和 = P[r + 1] - P[l]"],
+      ui:"free", ph:"格式：数组 l r", def:"2,0,2,0,2 0 4",
+      validate(v){const m=/^(.+) (\d+) (\d+)$/.exec(v.trim());if(!m)return "格式：数组 l r（如 2,0,2,0,2 0 4）";
+        const a=parseNums(m[1]);if(!a)return "数组要是整数";
+        const l=+m[2],r=+m[3];if(l>r||r>=a.length)return "要求 0 ≤ l ≤ r < 数组长度";return null},
+      presets:[{l:"[2,0,2,0,2] 0 4",v:"2,0,2,0,2 0 4"},{l:"[2,0,2,0,2] 0 2",v:"2,0,2,0,2 0 2"},{l:"[5,1,1,1,1] 1 3",v:"5,1,1,1,1 1 3"}],
+      run(v){const m=/^(.+) (\d+) (\d+)$/.exec(v.trim());const a=parseNums(m[1]),l=+m[2],r=+m[3];
+        const P=[0];for(const x of a)P.push(P[P.length-1]+x);
+        const sum=P[r+1]-P[l],len=r-l+1;
+        return "P = ["+P.join(", ")+"]\n区间 ["+l+","+r+"] 和 = "+sum+"（= "+P[r+1]+" − "+P[l]+"）· 长度 "+len+" · 平均 "+(sum/len).toFixed(2)},
+      note(){return "一次减法拿到任意区间和——不用每次重新加。平均值比较时用乘法形式更稳。"}
+    }},
+  { t:"实验 2 · 三重循环的代价", kind:"demo", need:{tle:true}, tle:true,
+    d:"暴力版：枚举每个区间、现场求和。n = 10000 时区间有 5×10⁷ 个，每个求和还要 O(n)。",
+    demo:{
+      code:["for (int s = 0; s < n; ++s)","    for (int e = s; e < n; ++e){","        int sum = 0;","        for (int k = s; k <= e; ++k) sum += records[k];  // ← 每个区间重算","        if (sum >= (e - s + 1) * threshold) ++cnt;","    }"],
+      ui:"presetsOnly",
+      presets:[{l:"n = 10000",v:"big"}],
+      run(v){return "TLE"},
+      tle:{total:166616670000, unit:"次累加", head:"区间 5×10⁷ 个，每个现场求和…"}
+    }},
+  { t:"先猜后跑", kind:"guess", need:{guess:true},
+    d:"改进版用前缀和 + 双重枚举（右端点×长度）。样例：records = [2,0,2,0,2]，长度范围 [2,4]，阈值 1。先猜。",
+    guess:{show:"records=[2,0,2,0,2]  长度[2,4]  阈值=1", q:"合格区间有几个？", opts:["8","6","10"], ci:0,
+      why:"长度 2 的有 4 个，长度 3 的有 3 个，长度 4 的有 1 个——共 8 个。判定用区间和 ≥ L×阈值，避开除法。"}},
+  { t:"实验 3 · 改进：前缀和 + 右端点×长度", kind:"demo", need:{preset:"样例"},
+    d:"金色行是改进核心：判定“区间和 ≥ L × threshold”（乘法形式），长度上界取 min(maxLen, e+1) 防越界。",
+    demo:{
+      codeFn(){return ["int CountIntervals(const vector<int>& records,","                 const pair<int,int>& lenRange, int threshold) {","    vector<long long> P(n + 1, 0);","    for (int i = 0; i < n; ++i) P[i + 1] = P[i] + records[i];","    int cnt = 0;","    for (int e = 0; e < n; ++e){                    // 枚举右端点","        int hi = min(maxLen, e + 1);","        for (int L = minLen; L <= hi; ++L)","            if (P[e + 1] - P[e + 1 - L] >= (long long)L * threshold)","                ++cnt;","    }","    return cnt;","}"]},
+      hl:[7,8,9],
+      ui:"presetsOnly",
+      presets:[{l:"样例",v:"2,0,2,0,2 2 4 1"}],
+      run(v){const sp=v.trim().split(" ");const a=parseNums(sp[0]),mn=+sp[1],mx=+sp[2],th=+sp[3];
+        const P=[0];for(const x of a)P.push(P[P.length-1]+x);
+        let c=0;for(let e=0;e<a.length;e++)for(let L=mn;L<=Math.min(mx,e+1);L++)
+          if(P[e+1]-P[e+1-L]>=L*th)c++;
+        return "合格区间："+c+" 个"},
+      note(){return "右端点 × 长度唯一确定区间，不重不漏。数值大时前缀和要开 long long。"}}
+  },
+  { t:"原题验证", kind:"tests", need:{tests:true},
+    d:"这就是【软件认证】第 5 题。展开看完整规则。",
+    tests:{title:"题 5 · 磁盘空间统计",
+      orig:"records 为每天磁盘占用（1 ≤ n ≤ 10000）。统计满足条件的区间个数：长度 ∈ [minLen, maxLen]（左闭右闭），且区间平均值 ≥ threshold。",
+      sig:"int CountIntervals(const vector<int>& records, const pair<int,int>& lengthRange, int threshold)",
+      cases:[
+        {in:"[2,0,2,0,2]  [2,4]  1", exp:"8", got:"8", note:"样例"},
+        {in:"[0,0,0]  [1,2]  0", exp:"6", got:"6", note:"平均 0 ≥ 0 全部入选"},
+        {in:"[5]  [1,1]  10", exp:"0", got:"0", note:"单元素不达标"}]}}
+]}
+,
+{ id:"L7", name:"表达式计算", ch:"题 7 · 栈", diff:3,
+  intro:"后缀式 9,3,5,-,2,*,+ 就是 9+(3-5)*2。先看栈怎么吃掉它。",
+  stages:[
+  { t:"实验 1 · 看栈一步步算", kind:"demo", need:{any:true},
+    d:"规则：数字压栈；遇到运算符弹出两个数算完压回。注意每次弹栈——先弹出来的是【右】操作数。改表达式玩一玩（逗号分隔）。",
+    demo:{
+      code:["for (token : 表达式) {","    if (是数字) st.push(数字);","    else { b = pop(); a = pop();   // 先弹的是右操作数","           st.push(a op b); }","}"],
+      ui:"free", ph:"逗号分隔的后缀表达式", def:"9,3,5,-,2,*,+",
+      validate(v){const ts=v.split(",").map(x=>x.trim()).filter(x=>x.length);
+        if(!ts.length)return "输入不能为空";
+        for(const t of ts){if(!/^-?\d+$/.test(t)&&!/^[+\-*/]$/.test(t))return "token 要么是整数要么是 + - * /："+t}return null},
+      presets:[{l:"9,3,5,-,2,*,+",v:"9,3,5,-,2,*,+"},{l:"3,-3,-,2,/,10,-",v:"3,-3,-,2,/,10,-"},{l:"5,-3,/",v:"5,-3,/"}],
+      run(v){return String(evalRpn(v.split(",").map(x=>x.trim()).filter(x=>x.length)))},
+      trace(v){const ts=v.split(",").map(x=>x.trim()).filter(x=>x.length);
+        const fr=[],st=[];const NAME={"+":"+","-":"−","*":"×","/":"÷"};
+        for(const t of ts){
+          if(/^[+\-*/]$/.test(t)){
+            const b=st.pop(),a=st.pop();const r=calc1(t,a,b);st.push(r);
+            fr.push({l:2,stack:st.slice(),note:"运算符 "+NAME[t]+"：先弹右值 "+b+"，再弹左值 "+a+"，算 "+a+" "+NAME[t]+" "+b+" = "+r});
+          }else{st.push(+t);fr.push({l:1,stack:st.slice(),note:"数字 "+t+" 压栈"})}
+        }
+        fr.push({l:4,stack:st.slice(),note:"扫完，栈里剩下的就是答案",out:String(st[st.length-1])});
+        return fr}
+    }},
+  { t:"实验 2 · 最简实现：从头开始算", kind:"demo", need:{preset:"9,3,5,-"},
+    d:"直觉版：从左到右找第一个运算符，用开头两个数算掉，重复。跑 9,3,5,- ——正确答案是 11（9 − (3−5)）。",
+    demo:{
+      code:["int Naive(vector<int> nums, vector<char> ops) {","    while (!ops.empty()) {","        int r = apply(nums[0], nums[1], ops[0]);   // ← 用开头两个数","        nums = {r} + 剩余数字;","        ops.pop_front();","    }","    return nums[0];","}"],
+      ui:"presetsOnly",
+      presets:[{l:"9,3,5,-",v:"9,3,5,-"}],
+      run(v){return "从头算：9 − 3 = 6，剩下 5 用不上 → 输出 6  ← 正确答案是 11"},
+      note(){return "后缀式的运算符属于离它最近的两个数（3−5），不是开头的两个数。“最近的数”——这正是栈擅长的事。"}
+    }},
+  { t:"先猜后跑", kind:"guess", need:{guess:true},
+    d:"栈版，输入 5,-3,/（5 除以 -3）。",
+    guess:{show:"输入: \"5,-3,/\"", q:"输出是？", opts:["-1","-2","0"], ci:0,
+      why:"C++ 整数除法向零截断：5/-3 = -1。（Python 的 // 会给 -2——这题恰好考 C++ 的规则。）"}},
+  { t:"实验 3 · 改进：栈版完整代码", kind:"demo", need:{preset:"5,-3,/"},
+    d:"这就是最终形态。自由输入玩一玩，确认 3,-3,-,2,/,10,- = -7。",
+    demo:{
+      codeFn(){return ["int Calc(const string& expression) {","    vector<long long> st;","    // 切出每个 token（逗号分隔）……","    if (tok.size() == 1 && 是四则运算符) {","        long long b = st.back(); st.pop_back();","        long long a = st.back(); st.pop_back();","        st.push_back(apply(a, tok, b));   // C++ 的 / 恰好向零截断","    } else st.push_back(stoll(tok));","    return st.back();","}"]},
+      hl:[4,5,6,7],
+      ui:"free", ph:"逗号分隔的后缀表达式", def:"3,-3,-,2,/,10,-",
+      validate(v){const ts=v.split(",").map(x=>x.trim()).filter(x=>x.length);
+        for(const t of ts){if(!/^-?\d+$/.test(t)&&!/^[+\-*/]$/.test(t))return "token 要么是整数要么是 + - * /"}return null},
+      presets:[{l:"3,-3,-,2,/,10,-",v:"3,-3,-,2,/,10,-"},{l:"5,-3,/",v:"5,-3,/"}],
+      run(v){return String(evalRpn(v.split(",").map(x=>x.trim()).filter(x=>x.length)))},
+      note(){return "先弹右值 b、后弹左值 a。“长度为 1”的判断挡住了负数 -3 的误判。"}}
+  },
+  { t:"原题验证", kind:"tests", need:{tests:true},
+    d:"这就是【软件认证】第 7 题。展开看完整规则。",
+    tests:{title:"题 7 · 表达式计算",
+      orig:"expression 是后缀（逆波兰）四则运算表达式，逗号分隔。除法只保留整数部分（向零截断）：5/4=1、(-5)/3=-1、5/(-3)=-1。操作数可为负。长度 < 50000。",
+      sig:"int Calc(const string& expression)",
+      cases:[
+        {in:"\"9,3,5,-,2,*,+\"", exp:"5", got:"5", note:"9 + (3−5)×2"},
+        {in:"\"3,-3,-,2,/,10,-\"", exp:"-7", got:"-7", note:"(3−(−3))/2 − 10"},
+        {in:"\"5,-3,/\"", exp:"-1", got:"-1", note:"向零截断"}]}}
+]}
+);
+/* RPN 求值 */
+function calc1(op,a,b){switch(op){case "+":return a+b;case "-":return a-b;case "*":return a*b;default:return Math.trunc(a/b)}}
+function evalRpn(ts){const st=[];for(const t of ts){
+  if(/^[+\-*/]$/.test(t)&&t.length===1){const b=st.pop(),a=st.pop();st.push(calc1(t,a,b))}
+  else st.push(+t)}return st[st.length-1]}
+
+/* ============ 引擎 ============ */
+const SCRS=["scr-title","scr-map","scr-lab"];
+function showScreen(id){SCRS.forEach(s=>{$("#"+s).hidden=(s!==id)});$("#status").hidden=(id==="scr-title");window.scrollTo(0,0)}
+function updateStatus(){
+  const i=rank(SAVE.xp);
+  $("#st-lv").textContent=RANK[i][1];
+  const cur=RANK[i][0],nxt=RANK[i+1]?RANK[i+1][0]:RANK[i][0]+1;
+  $("#st-xp").style.transform="scaleX("+Math.min(1,(SAVE.xp-cur)/(nxt-cur))+")";
+  $("#st-misc").textContent="XP "+SAVE.xp+" · 通关 "+Object.keys(SAVE.done).length+"/"+LEVELS.length;
+  $("#bt-snd").textContent=SAVE.snd?"SND:ON":"SND:OFF";
+}
+function doneCount(){return LEVELS.filter(l=>SAVE.done[l.id]).length}
+function unlockedCount(){return Math.min(doneCount()+1,LEVELS.length)}
+
+function renderTitle(){
+  const has=SAVE.xp>0;
+  $("#scr-title").innerHTML=
+   '<div class="sub">PIXEL LAB · 像素实验室</div>'+
+   '<h1>心动计划</h1>'+
+   '<div class="logo2">C++ 实验通关</div>'+
+   '<div style="margin:24px 0 6px"><span class="pixelbox"><canvas id="hero" class="bob"></canvas></span></div>'+
+   '<p class="dim small" style="max-width:460px;margin:14px auto">每一关的节奏都一样：<b>玩直觉 → 跑最简实现 → 亲手跑坏它 → 改进再跑 → 原题验证</b>。改输入、切开关、单步看变量，看看“加上去到底是什么结果”。</p>'+
+   '<div class="actions" style="justify-content:center;margin-top:16px">'+
+   '<button class="btn" id="bt-start">'+(has?"继续实验":"进入实验室")+'</button></div>';
+  drawSprite($("#hero"));
+  $("#bt-start").onclick=()=>{sfx.click();renderMap();showScreen("scr-map")};
+}
+function drawSprite(cv){
+  const G=["....KKKK....","...KKKKKK...","..KKKKKKKK..","..KKKKKKKK..","..KSSSSSSK..","..KSKSSKSK..","..KSSSSSSK..","...SSSSSS...","..GWGGGGm...",".GGWGGGGmM..",".GGGGGGGmM..",".GGGGGGGGm..",".GGGGGGGG...","..GGGGGG....","..BB..BB....","..BB..BB....",".KKK..KKK..."];
+  const P={K:"#171930",S:"#f2c9a0",G:"#e8b04b",W:"#f5f6ff",B:"#23264a",M:"#bfefff",m:"#7c5a12"};
+  cv.width=12*6;cv.height=G.length*6;
+  const g=cv.getContext("2d");
+  G.forEach((row,y)=>[...row].forEach((ch,x)=>{if(P[ch]){g.fillStyle=P[ch];g.fillRect(x*6,y*6,6,6)}}));
+}
+function renderMap(){
+  updateStatus();
+  let h='<div class="ph" style="font-family:var(--f-disp);font-size:10px;color:var(--cyan);letter-spacing:2px;margin:0 0 14px">LEVEL PATH · 关卡路径</div>';
+  h+='<div class="note">从最简单的实验开始，一关一个概念。第 2 关之后的关卡是排好的草稿——你先把第 1 关玩通，觉得可玩我再照这个手感打磨后面的。</div><div class="lvl">';
+  LEVELS.forEach((l,i)=>{
+    const un=i<unlockedCount(),done=!!SAVE.done[l.id];
+    h+='<div class="node'+(un?"":" locked")+(done?" done":"")+'">'+
+     '<div class="rail"><div class="dot">'+(done?"✓":String(i+1).padStart(2,"0"))+'</div><div class="wire"></div></div>'+
+     '<div class="card" data-i="'+i+'"><div class="nm">'+l.name+'</div>'+
+     '<div><span class="tag">'+l.ch+'</span>'+"★".repeat(l.diff)+'</div>'+
+     '<div class="small dim" style="margin-top:4px">'+l.intro+'</div></div></div>';
+  });
+  h+='</div>';
+  $("#scr-map").innerHTML=h;
+  $$("#scr-map .card").forEach(c=>{
+    c.onclick=()=>{
+      const i=+c.dataset.i;
+      if(i>=unlockedCount()){sfx.err();return}
+      sfx.click();openLevel(i);
+    };
+  });
+}
+
+/* ---- 实验台 ---- */
+let CUR=null;
+function openLevel(i){
+  const lv=LEVELS[i];
+  CUR={lv,i,st:0,hist:[],tog:{},togRuns:{},ranPresets:{},ranAny:false,tleDone:false,guessDone:false,testsDone:false,
+       lastIn:"",frames:null,fi:0,testing:false,blankVals:{},blankDone:{},blankTry:{},blankHint:{}};
+  renderLab();showScreen("scr-lab");
+}
+function needMet(){
+  const st=CUR.lv.stages[CUR.st];
+  if(st.need.guess)return CUR.guessDone;
+  if(st.need.tests)return CUR.testsDone;
+  if(st.need.tle)return CUR.tleDone;
+  if(st.need.blanks){const bs=st.demo.blanks||[];return bs.every((b,i)=>CUR.blankDone[i])}
+  if(st.need.opts){
+    const keys=Object.keys(CUR.togRuns);
+    const demo=st.demo;
+    const all=["base",...demo.toggles.map(t=>t.k)];
+    return all.every(k=>CUR.togRuns[k]);
+  }
+  if(st.need.preset)return !!CUR.ranPresets[st.need.preset];
+  return CUR.ranAny;
+}
+function renderLab(){
+  updateStatus();
+  const lv=CUR.lv,st=lv.stages[CUR.st];
+  let h='<div class="stagebar">';
+  let dc=0;
+  lv.stages.forEach((s,i)=>{const lab=s.kind==="tests"?"验收":(s.kind==="guess"?"猜一猜":"实验 "+(++dc));h+='<div class="st'+(i===CUR.st?" now":i<CUR.st?" ok":"")+'">'+(i<CUR.st?"✓ ":"")+lab+'</div>'});
+  h+='</div>';
+  h+='<div class="panel"><div class="ph" style="font-family:var(--f-disp);font-size:10px;color:var(--gold);letter-spacing:1px;margin-bottom:8px">'+lv.name+' · '+st.t+'</div>'+
+     '<div class="goal">'+st.d+'</div></div>';
+  if(st.kind==="demo")h+=demoPanel(st);
+  else if(st.kind==="guess")h+=guessPanel(st);
+  else h+=testsPanel(st);
+  h+='<div class="actions"><button class="btn" id="bt-next" '+(needMet()?"":"disabled")+'>'+(CUR.st<lv.stages.length-1?"下一步 ▶":"通关 ✓")+'</button></div>';
+  $("#scr-lab").innerHTML=h;
+  bindLab(st);
+}
+function codeHtml(st){
+  const demo=st.demo;
+  const lines=demo.codeFn?demo.codeFn(CUR.tog):demo.code;
+  const hlRaw=demo.hl;
+  const hlSet=new Set(typeof hlRaw==="function"?hlRaw(CUR.tog):(hlRaw||[]));
+  let h='<div class="codebox"><pre>';
+  lines.forEach((ln,i)=>{
+    h+='<div class="cline'+(hlSet.has(i)?" hl":"")+(CUR.frames&&CUR.traceOn&&CUR.frames[CUR.fi]&&CUR.frames[CUR.fi].l===i?" cur":"")+'"><span class="no">'+String(i+1)+'</span><span class="tx">'+lineTx(st,ln)+'</span></div>';
+  });
+  return h+'</pre></div>';
+}
+function lineTx(st,ln){
+  if(!st.demo.blanks||String(ln).indexOf("%")<0)return esc(ln);
+  const parts=String(ln).split(/%(\d+)/);let out="";
+  for(let k=0;k<parts.length;k++){
+    if(k%2===0){out+=esc(parts[k])}
+    else{
+      const n=+parts[k],b=st.demo.blanks[n];
+      if(CUR.blankDone[n]){out+='<span class="bsolved">'+esc(CUR.blankVals[n]||b.ans)+'</span>'}
+      else{const w=Math.max(5,(b.ans||"").length+3);
+        out+='<input class="binput" data-b="'+n+'" value="'+esc(CUR.blankVals[n]||"")+'" placeholder="'+esc(b.ph||"")+'" style="width:'+w+'ch">'}
+    }
+  }
+  return out;
+}
+function demoPanel(st){
+  const demo=st.demo;
+  let h=codeHtml(st)+blankBar(st);
+  h+='<div class="term" id="term"></div>';
+  if(demo.ui==="free"){
+    h+='<div class="inrow"><label>输入</label><input id="in" placeholder="'+(demo.ph||"")+'" value="'+esc(CUR.lastIn||(demo.def||""))+'">';
+    h+='<button class="btn small" id="bt-run">▶ 运行</button></div>';
+  }else if(demo.ui==="fixed"){
+    h+='<div class="inrow"><label>输入</label><span class="qb" style="font-family:var(--f-mono)">'+esc(demo.fixed)+'</span><button class="btn small" id="bt-run">▶ 运行</button></div>';
+  }
+  if(demo.presets){
+    h+='<div class="inrow"><label>预设</label>'+demo.presets.map(p=>'<button class="preset" data-v="'+esc(p.v)+'" data-l="'+esc(p.l)+'">'+esc(p.l)+'</button>').join("")+'</div>';
+  }
+  if(demo.toggles){
+    h+='<div class="switch">'+demo.toggles.map(t=>'<button data-k="'+t.k+'"'+(CUR.tog[t.k]?' class="on"':'')+'>⏻ '+t.label+'</button>').join("")+'</div>';
+  }
+  h+='<div id="tracebox"></div>';
+  if(demo.trace)h+='<div class="tctl"><button class="btn ghost small" id="bt-trace">⏯ 单步追踪</button></div>';
+  return h;
+}
+function appendTerm(txt,cls){
+  const term=$("#term");
+  const sp=document.createElement("span");
+  sp.className=cls||"c";sp.textContent=txt+"\n";
+  term.appendChild(sp);term.scrollTop=term.scrollHeight;
+  sfx.click();
+}
+function doRun(rawIn,label){
+  const st=CUR.lv.stages[CUR.st],demo=st.demo;
+  if(demo.tle){playTle(demo.tle);return}
+  if(demo.blanks&&!blankAllDone(st)){sfx.err();appendTerm("⨯ 编译失败：代码还有空没填——把金色空补上再跑","r");return}
+  const v=rawIn;
+  if(demo.ui==="free"&&demo.validate){const err=demo.validate(v);if(err){sfx.err();appendTerm("⨯ "+err,"r");return}}
+  CUR.lastIn=v;
+  const out=demo.run(v,CUR.tog);
+  appendTerm("> 输入: "+(label||v),"d");
+  appendTerm(out,"y");
+  if(demo.note){const n=demo.note(CUR.tog);if(n)appendTerm("↳ "+n,"d")}
+  CUR.ranAny=true;
+  if(label)CUR.ranPresets[label]=true;
+  CUR.togRuns[Object.keys(CUR.tog).filter(k=>CUR.tog[k]).join("+")||"base"]=true;
+  const nb=$("#bt-next");if(nb)nb.disabled=!needMet();
+}
+function playTle(cfg){
+  if(CUR.tlePlaying)return;CUR.tlePlaying=true;
+  if(cfg.head)appendTerm(cfg.head,"d");
+  else appendTerm("> 输入: 把规模拉到题目上限，运行 ——","d");
+  let shown=0;
+  const steps=[1e4,1e6,5e7,5e8,2e9,4e9,5e9];
+  let si=0;
+  const tick=()=>{
+    if(si>=steps.length){
+      appendTerm("⨯ 超时 Time Limit Exceeded（超过 "+cfg.total.toLocaleString()+" "+(cfg.unit||"次")+"仍未跑完）","r");
+      appendTerm("↳ 这就是为什么要把 O(n²) 换掉。","d");
+      CUR.tleDone=true;CUR.tlePlaying=false;sfx.err();
+      const nb=$("#bt-next");if(nb)nb.disabled=!needMet();
+      return;
+    }
+    shown=steps[si++];
+    appendTerm("  已比较 "+shown.toLocaleString()+" "+(cfg.unit||"次")+" …","c");
+    setTimeout(tick,si<4?300:420);
+  };
+  tick();
+}
+function guessPanel(st){
+  const g=st.guess;
+  let h='<div class="term"><span class="d">'+esc(g.show)+'</span>\n<span class="c">'+esc(g.q)+'</span></div>';
+  h+='<div class="guess">'+g.opts.map((o,i)=>'<button data-i="'+i+'">'+esc(o)+'</button>').join("")+'</div>';
+  h+='<div class="fb" id="gfb" hidden></div>';
+  return h;
+}
+function testsPanel(st){
+  const ts=st.tests;
+  let h='<div class="term" id="term"></div>';
+  if(ts.orig)h+='<details class="orig"><summary>题目原文 · '+ts.title+'</summary><div class="small">'+esc(ts.orig)+'</div></details>';
+  h+='<div class="sig" style="font-family:var(--f-mono);font-size:13px;background:var(--bg2);border:2px solid var(--gold-dk);padding:8px 12px;overflow-x:auto;white-space:pre;color:var(--gold)">'+esc(ts.sig||"")+'</div>';
+  h+='<div class="actions" style="justify-content:flex-start"><button class="btn small" id="bt-tests">▶ 提交判题机</button></div>';
+  return h;
+}
+
+/* ---- 单步追踪 ---- */
+function refreshCode(){
+  const st=CUR.lv.stages[CUR.st];
+  if(st.kind!=="demo")return;
+  const cb=$("#scr-lab .codebox");
+  if(cb){cb.outerHTML=codeHtml(st);bindBlankInputs(st)}
+}
+function traceInput(st){
+  const d=st.demo;
+  return CUR.lastIn||d.def||(d.presets&&d.presets[0]&&d.presets[0].v)||d.fixed||"";
+}
+function toggleTrace(){
+  const st=CUR.lv.stages[CUR.st];
+  if(!CUR.frames){
+    if(st.demo.blanks&&!blankAllDone(st)){sfx.err();appendTerm("⨯ 代码还没补全——先把金色空填上再看执行","r");return}
+    CUR.frames=st.demo.trace(traceInput(st),CUR.tog);
+    CUR.fi=0;CUR.traceOn=true;
+    $("#bt-trace").textContent="⏹ 关闭追踪";
+    renderTrace();refreshCode();
+  }else{
+    CUR.frames=null;CUR.traceOn=false;CUR.fi=0;
+    $("#tracebox").innerHTML="";
+    $("#bt-trace").textContent="⏯ 单步追踪";
+    refreshCode();
+  }
+}
+function renderTrace(){
+  const f=CUR.frames[CUR.fi];
+  let h='<div class="panel flat panel2" style="margin-top:12px;padding:12px 14px">';
+  h+='<div class="tctl" style="margin-top:0;align-items:center">'+
+     '<button class="btn ghost small" id="tv-prev" '+(CUR.fi===0?"disabled":"")+'>◀ 上一帧</button>'+
+     '<span class="small dim">'+(CUR.fi+1)+" / "+CUR.frames.length+'</span>'+
+     '<button class="btn ghost small" id="tv-next" '+(CUR.fi===CUR.frames.length-1?"disabled":"")+'>下一帧 ▶</button></div>';
+  h+='<div>'+frameHtml(f)+'</div>';
+  h+='<div class="tnote">'+esc(f.note||"")+'</div></div>';
+  $("#tracebox").innerHTML=h;
+  if(f.car&&$("#carcv"))drawCarGrid($("#carcv"),f.car);
+  $("#tv-prev").onclick=()=>{if(CUR.fi>0){CUR.fi--;sfx.click();renderTrace();refreshCode()}};
+  $("#tv-next").onclick=()=>{if(CUR.fi<CUR.frames.length-1){CUR.fi++;sfx.click();renderTrace();refreshCode()}};
+}
+function frameHtml(f){
+  let h="";
+  if(f.car)h+=carFrame(f.car);
+  if(f.gift)h+=giftFrame(f.gift);
+  if(f.stack)h+=stackFrame(f.stack);
+  if(f.v)h+='<div class="vt">'+f.v.map(p=>'<div class="vr"><span class="k">'+esc(p[0])+'</span><span class="val">'+esc(p[1])+'</span></div>').join("")+'</div>';
+  if(f.out!==undefined)h+='<div class="tnote" style="color:var(--gold)">输出: '+esc(f.out)+'</div>';
+  return h||'<div class="dim small">(这一步没有变量变化)</div>';
+}
+function carFrame(car){
+  return '<div style="text-align:center"><canvas id="carcv" class="grid" style="margin:10px auto 0"></canvas>'+
+    '<div class="small dim" style="margin-top:8px">位置 ('+car.x+', '+car.y+') · 朝向向量 (dx,dy) = ('+car.dx+', '+car.dy+')</div></div>';
+}
+function drawCarGrid(cv,car){
+  const N=9,C=28,cen=4;
+  cv.width=N*C;cv.height=N*C;
+  const g=cv.getContext("2d");
+  g.fillStyle="#0d1024";g.fillRect(0,0,cv.width,cv.height);
+  g.strokeStyle="#23264a";g.lineWidth=1;
+  for(let i=0;i<=N;i++){
+    g.beginPath();g.moveTo(i*C+.5,0);g.lineTo(i*C+.5,N*C);g.stroke();
+    g.beginPath();g.moveTo(0,i*C+.5);g.lineTo(N*C,i*C+.5);g.stroke();
+  }
+  g.fillStyle="#1c2244";
+  g.fillRect(cen*C,0,1,N*C);g.fillRect(0,cen*C,N*C,1);
+  const px=(cen+car.x)*C,py=(cen-car.y)*C;
+  g.fillStyle="#ffd23f";g.fillRect(px+3,py+3,C-6,C-6);
+  const cx=px+C/2,cy=py+C/2,u=car.dx,v=-car.dy;
+  g.fillStyle="#15130a";
+  g.fillRect(cx-3+u*6,cy-3+v*6,6,6);
+  g.fillRect(cx-2-u*5,cy-2-v*5,4,4);
+}
+function giftFrame(g){
+  let h='<div class="small dim" style="margin-top:10px">队列（金色 = 队首）'+(g.f.length?"":"：空")+'</div><div class="qboxes">'+
+    g.f.map((x,i)=>'<span class="qb'+(i===0?" top":"")+'">'+esc(x)+'</span>').join("")+'</div>';
+  h+='<div class="small dim" style="margin-top:10px">礼物栈（金色 = 栈顶）'+(g.p.length?"":"：空")+'</div><div class="qboxes">'+
+    g.p.map((x,i)=>'<span class="qb'+(i===0?" top":"")+'">'+esc(x)+'</span>').join("")+'</div>';
+  return h;
+}
+function stackFrame(a){
+  return '<div class="small dim" style="margin-top:10px">栈（金色 = 栈顶）'+(a.length?"":"：空")+'</div><div class="qboxes">'+
+    a.map((x,i)=>'<span class="qb'+(i===a.length-1?" top":"")+'">'+esc(x)+'</span>').join("")+'</div>';
+}
+
+/* ---- 代码填空 ---- */
+function blankNorm(s){return String(s).replace(/\s+/g," ").trim().replace(/;+$/,"").trim()}
+function blankAllDone(st){const bs=(st.demo&&st.demo.blanks)||[];return bs.every((b,i)=>CUR.blankDone[i])}
+function blankBar(st){
+  if(!st.demo.blanks)return "";
+  return '<div class="bbar"><button class="btn small" id="bt-check">✓ 检查</button>'+
+    '<button class="btn ghost small" id="bt-hint">💡 提示</button>'+
+    '<span class="small dim" id="bfb">把代码里的金色空填上，程序才能编译运行</span></div>';
+}
+function bindBlankInputs(st){
+  $$("#scr-lab .binput").forEach(inp=>{
+    inp.oninput=()=>{CUR.blankVals[inp.dataset.b]=inp.value;inp.classList.remove("bwrong")};
+    inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();checkBlanks(st)}};
+  });
+  const bc=$("#bt-check");
+  if(bc)bc.onclick=()=>{sfx.click();checkBlanks(st)};
+  const bh=$("#bt-hint");
+  if(bh)bh.onclick=()=>{sfx.click();hintBlank(st)};
+}
+function checkBlanks(st){
+  const bs=st.demo.blanks;let okAll=true,anyTyped=false;
+  bs.forEach((b,i)=>{
+    if(CUR.blankDone[i])return;
+    const v=blankNorm(CUR.blankVals[i]||"");
+    if(!v)return;
+    anyTyped=true;
+    if(b.accept.some(a=>blankNorm(a)===v))CUR.blankDone[i]=true;
+    else{okAll=false;CUR.blankTry[i]=(CUR.blankTry[i]||0)+1}
+  });
+  const emptyLeft=bs.some((b,i)=>!CUR.blankDone[i]&&!blankNorm(CUR.blankVals[i]||""));
+  $$("#scr-lab .binput").forEach(inp=>{
+    if(!CUR.blankDone[+inp.dataset.b]&&blankNorm(CUR.blankVals[inp.dataset.b]||"")!=="")inp.classList.add("bwrong");
+  });
+  const fb=$("#bfb");
+  if(blankAllDone(st)){
+    sfx.ok();
+    if(fb)fb.textContent="✔ 全部正确，代码补全了——去点【▶ 运行】看结果";
+    appendTerm("✔ 代码补全，编译通过","g");
+    if(st.demo.note)appendTerm("↳ "+st.demo.note,"d");
+  }else{
+    sfx.err();
+    if(fb)fb.textContent=emptyLeft&&anyTyped?"有空还没填；填错的红框再想想，卡住就点【💡 提示】":"不对——错两次的空可以点【💡 提示】看思路";
+  }
+  refreshCode();
+  const nb=$("#bt-next");if(nb)nb.disabled=!needMet();
+}
+function hintBlank(st){
+  const bs=st.demo.blanks;
+  const i=bs.findIndex((b,k)=>!CUR.blankDone[k]);
+  if(i<0)return;
+  const b=bs[i],hi=CUR.blankHint[i]||0,fb=$("#bfb");
+  if(hi<b.hints.length){
+    CUR.blankHint[i]=hi+1;
+    if(fb)fb.textContent="空 "+(i+1)+"："+b.hints[hi]+"　（提示 "+(hi+1)+"/"+b.hints.length+"）";
+    sfx.click();
+  }else{
+    CUR.blankVals[i]=b.ans;CUR.blankDone[i]=true;
+    if(fb)fb.textContent="空 "+(i+1)+" 已填入答案 "+b.ans+"——对着代码把这行读一遍再继续";
+    sfx.pass();
+    refreshCode();
+    if(blankAllDone(st)){
+      appendTerm("✔ 代码补全（有空是看答案填的），编译通过","g");
+      const nb=$("#bt-next");if(nb)nb.disabled=!needMet();
+    }
+  }
+}
+
+/* ---- 事件绑定 ---- */
+function bindLab(st){
+  const demo=st.demo;
+  if(st.kind==="demo"){
+    bindBlankInputs(st);
+    const runBtn=$("#bt-run");
+    if(runBtn)runBtn.onclick=()=>{sfx.click();doRun(demo.ui==="fixed"?demo.fixed:$("#in").value,null)};
+    const iv=$("#in");
+    if(iv)iv.onkeydown=e=>{if(e.key==="Enter"){sfx.click();doRun(iv.value,null)}};
+    $$("#scr-lab .preset").forEach(b=>b.onclick=()=>{sfx.click();doRun(b.dataset.v,b.dataset.l)});
+    $$("#scr-lab .switch button").forEach(b=>b.onclick=()=>{
+      const k=b.dataset.k;CUR.tog[k]=!CUR.tog[k];sfx.click();
+      b.classList.toggle("on",!!CUR.tog[k]);
+      refreshCode();
+      if(CUR.frames){CUR.frames=null;CUR.traceOn=false;$("#tracebox").innerHTML="";$("#bt-trace").textContent="⏯ 单步追踪"}
+    });
+    const bt=$("#bt-trace");
+    if(bt)bt.onclick=()=>{sfx.click();toggleTrace()};
+  }else if(st.kind==="guess"){
+    $$("#scr-lab .guess button").forEach(b=>b.onclick=()=>{
+      if(CUR.guessDone)return;
+      const i=+b.dataset.i,g=st.guess;
+      if(i===g.ci){
+        b.classList.add("good");sfx.ok();
+        CUR.guessDone=true;
+        const fb=$("#gfb");fb.hidden=false;fb.textContent=g.why;
+        $("#bt-next").disabled=false;
+      }else{
+        b.classList.add("badd");b.disabled=true;sfx.err();
+        const fb=$("#gfb");fb.hidden=false;fb.textContent="不对——再想想。提示：可以回上一个实验，把这个输入真的跑一遍。";
+      }
+    });
+  }else{
+    $("#bt-tests").onclick=()=>{sfx.click();runTests(st)};
+  }
+  $("#bt-next").onclick=()=>{sfx.click();nextStage()};
+}
+function nextStage(){
+  const lv=CUR.lv;
+  if(CUR.st<lv.stages.length-1){CUR.st++;renderLab();window.scrollTo(0,0)}
+  else{
+    if(CUR.i<LEVELS.length-1)openLevel(CUR.i+1);
+    else{renderMap();showScreen("scr-map")}
+  }
+}
+function runTests(st){
+  if(CUR.testing)return;CUR.testing=true;
+  const ts=st.tests;
+  appendTerm("$ 提交判题机 …","d");
+  let i=0;
+  const step=()=>{
+    if(i>=ts.cases.length){
+      appendTerm("✔ 全部通过！关卡完成","g");
+      if(!SAVE.done[CUR.lv.id]){SAVE.done[CUR.lv.id]=true;SAVE.xp+=100;saveSave();sfx.win()}
+      else sfx.pass();
+      updateStatus();
+      const nb=$("#bt-next");
+      nb.disabled=false;
+      nb.textContent=CUR.i<LEVELS.length-1?"下一关 ▶":"回到关卡表 ✓";
+      CUR.testing=false;
+      return;
+    }
+    const c=ts.cases[i];
+    appendTerm("用例 "+(i+1)+"   "+c.in+(c.note?"    // "+c.note:""),"c");
+    setTimeout(()=>{
+      const ok=c.got===undefined||c.got===c.exp;
+      appendTerm("  输出 "+(c.got!==undefined?c.got:c.exp)+" · 期望 "+c.exp+"  → "+(ok?"通过 ✓":"错误 ✗"),ok?"g":"r");
+      i++;step();
+    },460);
+  };
+  step();
+}
+
+/* ---- 启动 ---- */
+$("#bt-map").onclick=()=>{sfx.click();renderMap();showScreen("scr-map")};
+$("#bt-snd").onclick=()=>{SAVE.snd=!SAVE.snd;saveSave();updateStatus();if(SAVE.snd)sfx.click()};
+loadSave();
+renderTitle();
+showScreen("scr-title");
+updateStatus();
+if(window.claude&&window.claude.hot&&window.claude.hot.ready)window.claude.hot.ready();
+</script>
